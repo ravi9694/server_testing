@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #71b7e6, #9b59b6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chat-container {
+            width: 600px;
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .chat-box {
+            height: 400px;
+            overflow-y: scroll;
+            border-bottom: 1px solid #eee;
+            padding: 10px;
+        }
+        .chat-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .chat-table th, .chat-table td {
+            padding: 10px;
+            vertical-align: top;
+        }
+        .chat-table th {
+            width: 70px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            border-radius: 10px 0 0 10px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .chat-table td {
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        .chat-table tr {
+            margin-bottom: 10px;
+        }
+        .input-box {
+            display: flex;
+            padding: 10px;
+            background-color: #f4f4f9;
+            border-top: 1px solid #eee;
+        }
+        .input-box textarea {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            height: 60px;
+            font-size: 14px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        .input-box textarea:focus {
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 5px rgba(81, 203, 238, 1);
+            border-color: #5bc0de;
+        }
+        .input-box button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .input-box button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box">
+            <table class="chat-table" id="chat-table">
+                <!-- Messages will be appended here -->
+            </table>
+        </div>
+        <div class="input-box">
+            <textarea id="user-input" placeholder="Type your message here..."></textarea>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            const chatTable = document.getElementById('chat-table');
+
+            if (userInput.trim() === '') return;
+
+            // Display user message
+            const userRow = document.createElement('tr');
+            const userLabel = document.createElement('th');
+            const userMessage = document.createElement('td');
+            userLabel.textContent = 'User:';
+            userMessage.textContent = userInput;
+            userRow.appendChild(userLabel);
+            userRow.appendChild(userMessage);
+            chatTable.appendChild(userRow);
+
+            // Clear the input box
+            document.getElementById('user-input').value = '';
+
+            // Send message to the backend
+            const response = await fetch('/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: userInput })
+            });
+
+            const data = await response.json();
+
+            // Display chatbot response
+            const botRow = document.createElement('tr');
+            const botLabel = document.createElement('th');
+            const botMessage = document.createElement('td');
+            botLabel.textContent = 'Bot:';
+            botMessage.textContent = data.response;
+            botRow.appendChild(botLabel);
+            botRow.appendChild(botMessage);
+            chatTable.appendChild(botRow);
+
+            // Scroll to the bottom of the chat box
+            chatTable.parentElement.scrollTop = chatTable.parentElement.scrollHeight;
+        }
+    </script>
+</body>
+</html>
